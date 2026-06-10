@@ -137,6 +137,21 @@ textarea.inp{resize:vertical;min-height:60px;}
 .rte-editor:empty:before{content:attr(data-placeholder);color:var(--text3);pointer-events:none;}
 @media(max-width:900px){.editor-grid{grid-template-columns:1fr;}.preview-sticky{position:static;}}
 @media(max-width:600px){.container,.editor-wrap{padding:1rem;}.topbar{padding:0 1rem;}}
+@media print {
+  .ptab {
+    table-layout: auto !important;
+    width: 100% !important;
+  }
+  .ptab td {
+    max-width: none !important;
+    word-wrap: break-word !important;
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+  }
+  .ptab tr {
+    page-break-inside: avoid !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -762,7 +777,7 @@ textarea.inp{resize:vertical;min-height:60px;}
       if (s.titolo) sezioniHtml += "<tr><td colspan='6' style='padding:0'><div class='psec'>" + esc(s.titolo) + "</div></td></tr>";
       (s.voci||[]).forEach(function(v, vi) {
         var imgH = v.img ? "<img src='" + v.img + "' class='pimg'>" : "";
-        sezioniHtml += "<tr><td style='width:28px;vertical-align:top;padding-top:8px;'>" + (vi+1) + "</td><td style='width:105px;vertical-align:top;'><div class='cod'>" + esc(v.codice) + "</div>" + imgH + "</td><td style='vertical-align:top;'>" + esc(v.descrizione||"").replace(/\n/g,"<br>") + "</td><td></td><td></td><td></td></tr>";
+        sezioniHtml += "<tr><td style='width:28px;vertical-align:top;padding-top:8px;'>" + (vi+1) + "</td><td style='width:105px;vertical-align:top;'><div class='cod'>" + esc(v.codice) + "</div>" + imgH + "</td><td style='vertical-align:top;'>" + esc(v.descrizione||"").replace(/n/g,"<br>") + "</td><td></td><td></td><td></td></tr>";
         (v.sub||[]).forEach(function(sb) {
           var imp = (sb.qta||0)*(sb.prezzo||0); totGlobale += imp;
           sezioniHtml += "<tr><td></td><td></td><td>" + esc(sb.desc) + "</td><td class='r'>" + (sb.qta||0) + "</td><td class='r'>" + (sb.prezzo?fmtEur(sb.prezzo):"") + "</td><td class='r'>" + (imp?fmtEur(imp):"") + "</td></tr>";
@@ -860,7 +875,9 @@ textarea.inp{resize:vertical;min-height:60px;}
     var css = ""; document.querySelectorAll("style").forEach(function(s) { css += s.textContent; });
     style.textContent = css; wrapper.appendChild(style);
     var content = document.createElement("div"); content.id = "pdf-doc";
-    content.innerHTML = buildPDF(); wrapper.appendChild(content);
+    content.innerHTML = buildPDF();
+    content.innerHTML = content.innerHTML.replace(/<\/div><\/div>/g, '</div>'); 
+wrapper.appendChild(content);
     html2pdf().set({
       margin: [12, 12, 12, 12],
       filename: numero + "_" + cnome + ".pdf",
