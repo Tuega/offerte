@@ -4,36 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tuega - Preventivi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-    /* CSS FORZATO PER IL PDF */
-    #pdf-doc { width: 210mm; background: white; padding: 20px; margin: 0 auto; display: block !important; visibility: visible !important; }
+    body { font-family: 'DM Sans', sans-serif; padding: 20px; background: #f5f4f0; }
+    #pdf-doc { background: white; width: 210mm; min-height: 297mm; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
     .ptab { width: 100%; table-layout: fixed !important; border-collapse: collapse; }
-    .ptab th, .ptab td { border: 1px solid #000; padding: 5px; word-wrap: break-word; font-size: 9px; }
-    @media print { body { -webkit-print-color-adjust: exact; } }
+    .ptab th, .ptab td { border: 1px solid #e2ddd8; padding: 5px; word-wrap: break-word; font-size: 9px; }
+    .r { text-align: right; }
+    .psec { font-weight: bold; background: #f0ede8; padding: 5px; margin-top: 10px; }
 </style>
 </head>
 <body>
 
+<div style="text-align:center;"><button onclick="scaricaPDF()">Scarica PDF</button></div>
 <div id="pdf-doc"></div>
 
 <script>
-  // LA TUA FUNZIONE BUILD PDF CORRETTA
+  // La tua funzione originale integrata con il colgroup corretto
   function buildPDF() {
-    var numero = document.getElementById("e-numero") ? document.getElementById("e-numero").value : "";
-    var cnome = document.getElementById("e-cnome") ? document.getElementById("e-cnome").value : "";
-    var sezioniHtml = "<tr><td>Dati non caricati</td><td></td><td></td><td></td><td></td><td></td></tr>";
+    // Recupero valori dai campi (aggiunto controllo null)
+    var getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+    var numero = getVal("e-numero");
+    var cnome = getVal("e-cnome");
+    var sezioniHtml = "<tr><td colspan='6'>Dati in attesa di compilazione...</td></tr>";
     
-    // Inseriamo il colgroup corretto che avevamo concordato
+    // TABELLA CON COLGROUP FISSO (5,15,40,8,16,16 = 100%)
     var tableHtml = '<table class="ptab"><colgroup>' +
       '<col style="width:5%"><col style="width:15%"><col style="width:40%"><col style="width:8%"><col style="width:16%"><col style="width:16%">' +
       '</colgroup><thead><tr><th>Pos.</th><th>CODICE</th><th>DESCRIZIONE</th><th>QTA</th><th>PREZZO</th><th>IMPORTO</th></tr></thead>' +
       '<tbody>' + sezioniHtml + '</tbody></table>';
       
-    return "<h1>Preventivo " + numero + "</h1>" + tableHtml;
+    return "<h1>Preventivo: " + numero + "</h1><p>Spett.le " + cnome + "</p>" + tableHtml;
   }
 
-  // FUNZIONE PER FORZARE L'ANTEPRIMA
+  // Funzione che forza l'anteprima
   function aggiornaAnteprima() {
     var doc = document.getElementById("pdf-doc");
     if (doc) {
@@ -41,7 +46,7 @@
     }
   }
 
-  // FUNZIONE DOWNLOAD SENZA ERRORI
+  // Funzione DOWNLOAD (senza windowWidth)
   function scaricaPDF() {
     var element = document.getElementById('pdf-doc');
     var opt = {
@@ -54,13 +59,9 @@
     html2pdf().set(opt).from(element).save();
   }
 
-  // AVVIO AUTOMATICO
-  window.onload = function() {
-    aggiornaAnteprima();
-  };
+  // Avvio automatico al caricamento
+  window.onload = aggiornaAnteprima;
 </script>
-
-<button onclick="scaricaPDF()" style="position:fixed; top:10px; right:10px;">Scarica PDF</button>
 
 </body>
 </html>
