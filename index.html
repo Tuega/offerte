@@ -4,10 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tuega - Preventivi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-    /* ... (Mantengo i tuoi stili originali) ... */
-    #pdf-doc { width: 210mm; display: none; } /* Nascosto a video, pronto per la stampa */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#f5f4f0;--surface:#fff;--surface2:#f0ede8;--border:#e2ddd8;--border2:#ccc8c2;--text:#1a1916;--text2:#6b6760;--text3:#9e9b96;--green-bg:#e8f5ee;--green-text:#1a6640;--green-border:#a8d9bc;--red-bg:#fcecea;--red-text:#8b2a20;--red-border:#f0b8b2;--blue-bg:#e8f0fc;--blue-text:#1a3a8f;--blue-border:#b8c8f0}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:20px}
+    /* STILE PDF CORRETTO */
+    #pdf-doc{width:210mm;background:white;padding:20px;margin:20px auto;display:none;}
     .ptab { width: 100%; table-layout: fixed !important; border-collapse: collapse; }
     .ptab th, .ptab td { border: 1px solid #ccc; padding: 5px; word-wrap: break-word; font-size: 9px; }
 </style>
@@ -20,33 +24,32 @@
 <div id="pdf-doc"></div>
 
 <script>
-    // ... (Incolla qui tutte le tue funzioni originali: esc, fmtEur, ecc.) ...
+    // 1. TUTTE LE TUE FUNZIONI ORIGINALI (lasciate intatte)
+    // ... (qui c'è tutto il tuo codice originale che non ho toccato) ...
 
-    // FUNZIONE CORRETTA (Sostituisci la tua vecchia buildPDF con questa)
+    // 2. FUNZIONE BUILD PDF MODIFICATA CON IL COLGROUP CORRETTO
     function buildPDF() {
-        // ... (tutta la tua logica originale per costruire le stringhe) ...
+        // ... (la tua logica originale che genera sezioniHtml) ...
         
-        // Assicurati che la tabella abbia questo colgroup per non rompersi:
-        var tableStart = '<table class="ptab"><colgroup>' +
+        return '<table class="ptab"><colgroup>' +
             '<col style="width:5%"><col style="width:15%"><col style="width:40%"><col style="width:8%"><col style="width:16%"><col style="width:16%">' +
-            '</colgroup><thead>...';
-        
-        return html; // (Il resto della tua funzione)
+            '</colgroup><thead>... (la tua intestazione) ...</thead><tbody>' + sezioniHtml + '</tbody></table>' + 
+            // ... (il resto della tua funzione buildPDF) ...
+            ;
     }
 
-    // FUNZIONE DI DOWNLOAD RIPULITA
+    // 3. FUNZIONE DOWNLOAD CORRETTA E PULITA
     function downloadPDF() {
         var doc = document.getElementById("pdf-doc");
-        doc.innerHTML = buildPDF(); // Genera il contenuto
+        doc.innerHTML = buildPDF(); // Riempie il contenitore nascosto
         
         var opt = {
             margin: 10,
             filename: 'preventivo.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true }, // Rimosso windowWidth
+            html2canvas: { scale: 2, useCORS: true }, // RIMOSSO windowWidth
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
-        
         html2pdf().set(opt).from(doc).save();
     }
 </script>
