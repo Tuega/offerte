@@ -762,7 +762,7 @@ textarea.inp{resize:vertical;min-height:60px;}
       if (s.titolo) sezioniHtml += "<tr><td colspan='6' style='padding:0'><div class='psec'>" + esc(s.titolo) + "</div></td></tr>";
       (s.voci||[]).forEach(function(v, vi) {
         var imgH = v.img ? "<img src='" + v.img + "' class='pimg'>" : "";
-        sezioniHtml += "<tr><td style='width:28px;vertical-align:top;padding-top:8px;'>" + (vi+1) + "</td><td style='width:105px;vertical-align:top;'><div class='cod'>" + esc(v.codice) + "</div>" + imgH + "</td><td style='vertical-align:top;'>" + esc(v.descrizione||"").replace(/n/g,"<br>") + "</td><td></td><td></td><td></td></tr>";
+        sezioniHtml += "<tr><td style='width:28px;vertical-align:top;padding-top:8px;'>" + (vi+1) + "</td><td style='width:105px;vertical-align:top;'><div class='cod'>" + esc(v.codice) + "</div>" + imgH + "</td><td style='vertical-align:top;'>" + esc(v.descrizione||"").replace(/\n/g,"<br>") + "</td><td></td><td></td><td></td></tr>";
         (v.sub||[]).forEach(function(sb) {
           var imp = (sb.qta||0)*(sb.prezzo||0); totGlobale += imp;
           sezioniHtml += "<tr><td></td><td></td><td>" + esc(sb.desc) + "</td><td class='r'>" + (sb.qta||0) + "</td><td class='r'>" + (sb.prezzo?fmtEur(sb.prezzo):"") + "</td><td class='r'>" + (imp?fmtEur(imp):"") + "</td></tr>";
