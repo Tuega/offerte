@@ -1,52 +1,66 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <title>Anteprima Preventivo</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #eee; }
-        /* Il contenitore deve essere visibile e avere dimensioni */
-        #pdf-doc { 
-            background: white; 
-            width: 210mm; 
-            min-height: 297mm; 
-            margin: 20px auto; 
-            padding: 20px;
-            border: 1px solid #ccc;
-            overflow: hidden;
-        }
-        .controls { text-align: center; margin-bottom: 20px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuega - Preventivi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+    /* CSS FORZATO PER IL PDF */
+    #pdf-doc { width: 210mm; background: white; padding: 20px; margin: 0 auto; display: block !important; visibility: visible !important; }
+    .ptab { width: 100%; table-layout: fixed !important; border-collapse: collapse; }
+    .ptab th, .ptab td { border: 1px solid #000; padding: 5px; word-wrap: break-word; font-size: 9px; }
+    @media print { body { -webkit-print-color-adjust: exact; } }
+</style>
 </head>
 <body>
 
-<div class="controls">
-    <button onclick="scaricaPDF()">Scarica PDF</button>
-</div>
-
-<div id="pdf-doc">
-    <h1>Anteprima Preventivo</h1>
-    <p>Se vedi questo testo, il contenitore funziona.</p>
-</div>
+<div id="pdf-doc"></div>
 
 <script>
-    // Questa funzione carica il contenuto dentro il div
-    function caricaAnteprima() {
-        var doc = document.getElementById("pdf-doc");
-        // Qui richiamiamo la tua funzione buildPDF che hai nel file
-        if (typeof buildPDF === 'function') {
-            doc.innerHTML = buildPDF();
-        }
-    }
+  // LA TUA FUNZIONE BUILD PDF CORRETTA
+  function buildPDF() {
+    var numero = document.getElementById("e-numero") ? document.getElementById("e-numero").value : "";
+    var cnome = document.getElementById("e-cnome") ? document.getElementById("e-cnome").value : "";
+    var sezioniHtml = "<tr><td>Dati non caricati</td><td></td><td></td><td></td><td></td><td></td></tr>";
+    
+    // Inseriamo il colgroup corretto che avevamo concordato
+    var tableHtml = '<table class="ptab"><colgroup>' +
+      '<col style="width:5%"><col style="width:15%"><col style="width:40%"><col style="width:8%"><col style="width:16%"><col style="width:16%">' +
+      '</colgroup><thead><tr><th>Pos.</th><th>CODICE</th><th>DESCRIZIONE</th><th>QTA</th><th>PREZZO</th><th>IMPORTO</th></tr></thead>' +
+      '<tbody>' + sezioniHtml + '</tbody></table>';
+      
+    return "<h1>Preventivo " + numero + "</h1>" + tableHtml;
+  }
 
-    function scaricaPDF() {
-        var element = document.getElementById('pdf-doc');
-        html2pdf().from(element).save('preventivo.pdf');
+  // FUNZIONE PER FORZARE L'ANTEPRIMA
+  function aggiornaAnteprima() {
+    var doc = document.getElementById("pdf-doc");
+    if (doc) {
+        doc.innerHTML = buildPDF();
     }
+  }
 
-    // Carica l'anteprima appena la pagina è pronta
-    window.onload = caricaAnteprima;
+  // FUNZIONE DOWNLOAD SENZA ERRORI
+  function scaricaPDF() {
+    var element = document.getElementById('pdf-doc');
+    var opt = {
+      margin: 10,
+      filename: 'preventivo.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  }
+
+  // AVVIO AUTOMATICO
+  window.onload = function() {
+    aggiornaAnteprima();
+  };
 </script>
+
+<button onclick="scaricaPDF()" style="position:fixed; top:10px; right:10px;">Scarica PDF</button>
+
 </body>
 </html>
