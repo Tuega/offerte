@@ -6,45 +6,49 @@
 <title>Tuega - Preventivi</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-    /* Inserisci qui il tuo CSS originale che avevi nel file */
-    /* Assicuriamoci che l'anteprima sia visibile */
-    #pdf-doc { width: 100%; display: block !important; }
-    
-    /* Correzione tabella PDF per non farla sballare */
+    /* ... (Mantengo i tuoi stili originali) ... */
+    #pdf-doc { width: 210mm; display: none; } /* Nascosto a video, pronto per la stampa */
     .ptab { width: 100%; table-layout: fixed !important; border-collapse: collapse; }
     .ptab th, .ptab td { border: 1px solid #ccc; padding: 5px; word-wrap: break-word; font-size: 9px; }
-    
-    @media print {
-        #pdf-doc { width: 210mm; }
-    }
 </style>
 </head>
 <body>
 
+<div id="app">
+    </div>
+
 <div id="pdf-doc"></div>
 
 <script>
-    // 1. INCOLLA QUI SOTTO TUTTE LE TUE FUNZIONI ORIGINALI (buildPDF, ecc.)
-    // Assicurati che buildPDF abbia il COLGROUP corretto che ti ho dato:
-    // <table class="ptab"><colgroup>
-    //   <col style="width:5%"><col style="width:15%"><col style="width:40%"><col style="width:8%"><col style="width:16%"><col style="width:16%">
-    // </colgroup>...
+    // ... (Incolla qui tutte le tue funzioni originali: esc, fmtEur, ecc.) ...
 
-    // 2. FUNZIONE DI DOWNLOAD CORRETTA (Sostituisci la tua vecchia con questa)
+    // FUNZIONE CORRETTA (Sostituisci la tua vecchia buildPDF con questa)
+    function buildPDF() {
+        // ... (tutta la tua logica originale per costruire le stringhe) ...
+        
+        // Assicurati che la tabella abbia questo colgroup per non rompersi:
+        var tableStart = '<table class="ptab"><colgroup>' +
+            '<col style="width:5%"><col style="width:15%"><col style="width:40%"><col style="width:8%"><col style="width:16%"><col style="width:16%">' +
+            '</colgroup><thead>...';
+        
+        return html; // (Il resto della tua funzione)
+    }
+
+    // FUNZIONE DI DOWNLOAD RIPULITA
     function downloadPDF() {
-        var element = document.getElementById('pdf-doc');
-        element.innerHTML = buildPDF(); // Aggiorna l'anteprima prima di salvare
+        var doc = document.getElementById("pdf-doc");
+        doc.innerHTML = buildPDF(); // Genera il contenuto
         
         var opt = {
             margin: 10,
             filename: 'preventivo.pdf',
-            image: { type: 'jpeg', quality: 1 },
+            image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true }, // Rimosso windowWidth
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
-        html2pdf().set(opt).from(element).save();
+        
+        html2pdf().set(opt).from(doc).save();
     }
 </script>
-
 </body>
 </html>
