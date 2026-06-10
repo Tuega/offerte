@@ -4,63 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tuega - Preventivi</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-    body { font-family: 'DM Sans', sans-serif; padding: 20px; background: #f5f4f0; }
-    #pdf-doc { background: white; width: 210mm; min-height: 297mm; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    /* Inserisci qui il tuo CSS originale che avevi nel file */
+    /* Assicuriamoci che l'anteprima sia visibile */
+    #pdf-doc { width: 100%; display: block !important; }
+    
+    /* Correzione tabella PDF per non farla sballare */
     .ptab { width: 100%; table-layout: fixed !important; border-collapse: collapse; }
-    .ptab th, .ptab td { border: 1px solid #e2ddd8; padding: 5px; word-wrap: break-word; font-size: 9px; }
-    .r { text-align: right; }
-    .psec { font-weight: bold; background: #f0ede8; padding: 5px; margin-top: 10px; }
+    .ptab th, .ptab td { border: 1px solid #ccc; padding: 5px; word-wrap: break-word; font-size: 9px; }
+    
+    @media print {
+        #pdf-doc { width: 210mm; }
+    }
 </style>
 </head>
 <body>
 
-<div style="text-align:center;"><button onclick="scaricaPDF()">Scarica PDF</button></div>
 <div id="pdf-doc"></div>
 
 <script>
-  // La tua funzione originale integrata con il colgroup corretto
-  function buildPDF() {
-    // Recupero valori dai campi (aggiunto controllo null)
-    var getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
-    var numero = getVal("e-numero");
-    var cnome = getVal("e-cnome");
-    var sezioniHtml = "<tr><td colspan='6'>Dati in attesa di compilazione...</td></tr>";
-    
-    // TABELLA CON COLGROUP FISSO (5,15,40,8,16,16 = 100%)
-    var tableHtml = '<table class="ptab"><colgroup>' +
-      '<col style="width:5%"><col style="width:15%"><col style="width:40%"><col style="width:8%"><col style="width:16%"><col style="width:16%">' +
-      '</colgroup><thead><tr><th>Pos.</th><th>CODICE</th><th>DESCRIZIONE</th><th>QTA</th><th>PREZZO</th><th>IMPORTO</th></tr></thead>' +
-      '<tbody>' + sezioniHtml + '</tbody></table>';
-      
-    return "<h1>Preventivo: " + numero + "</h1><p>Spett.le " + cnome + "</p>" + tableHtml;
-  }
+    // 1. INCOLLA QUI SOTTO TUTTE LE TUE FUNZIONI ORIGINALI (buildPDF, ecc.)
+    // Assicurati che buildPDF abbia il COLGROUP corretto che ti ho dato:
+    // <table class="ptab"><colgroup>
+    //   <col style="width:5%"><col style="width:15%"><col style="width:40%"><col style="width:8%"><col style="width:16%"><col style="width:16%">
+    // </colgroup>...
 
-  // Funzione che forza l'anteprima
-  function aggiornaAnteprima() {
-    var doc = document.getElementById("pdf-doc");
-    if (doc) {
-        doc.innerHTML = buildPDF();
+    // 2. FUNZIONE DI DOWNLOAD CORRETTA (Sostituisci la tua vecchia con questa)
+    function downloadPDF() {
+        var element = document.getElementById('pdf-doc');
+        element.innerHTML = buildPDF(); // Aggiorna l'anteprima prima di salvare
+        
+        var opt = {
+            margin: 10,
+            filename: 'preventivo.pdf',
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: { scale: 2, useCORS: true }, // Rimosso windowWidth
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
     }
-  }
-
-  // Funzione DOWNLOAD (senza windowWidth)
-  function scaricaPDF() {
-    var element = document.getElementById('pdf-doc');
-    var opt = {
-      margin: 10,
-      filename: 'preventivo.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
-  }
-
-  // Avvio automatico al caricamento
-  window.onload = aggiornaAnteprima;
 </script>
 
 </body>
