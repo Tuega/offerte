@@ -137,6 +137,18 @@ textarea.inp{resize:vertical;min-height:60px;}
 .rte-editor:empty:before{content:attr(data-placeholder);color:var(--text3);pointer-events:none;}
 @media(max-width:900px){.editor-grid{grid-template-columns:1fr;}.preview-sticky{position:static;}}
 @media(max-width:600px){.container,.editor-wrap{padding:1rem;}.topbar{padding:0 1rem;}}
+@media print {
+  .ptab {
+    width: 100% !important;
+    table-layout: fixed !important; /* Forza la tabella a usare le percentuali del colgroup */
+    border-collapse: collapse !important;
+  }
+  .ptab td, .ptab th {
+    word-wrap: break-word !important; /* Se il testo è lungo, va a capo invece di spingere la tabella */
+    overflow: hidden !important;
+    padding: 5px !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -741,7 +753,7 @@ textarea.inp{resize:vertical;min-height:60px;}
   }
 
   // ---- PDF ----
-  function buildPDF() {
+function buildPDF() {
     var numero = document.getElementById("e-numero").value;
     var data = document.getElementById("e-data").value;
     var oggetto = document.getElementById("e-oggetto").value;
@@ -785,16 +797,12 @@ textarea.inp{resize:vertical;min-height:60px;}
       '<div class="pogg"><strong>Ogg.: ' + esc(oggetto) + '</strong></div>' +
       '<p style="margin-bottom:8px;font-size:10px;">Di seguito, le quotazioni economiche come richiesto:</p>' +
       '<p class="piva">Tutti i prezzi, anche se non espressamente indicato sono I.V.A. esclusa.</p>' +
-      '<table class="ptab"><colgroup><col style="width:4%"><col style="width:15%"><col style="width:45%"><col style="width:6%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>Pos.</th><th>CODICE</th><th>DESCRIZIONE</th><th class="r">QTA</th><th class="r">PREZZO UNITARIO</th><th class="r">IMPORTO</th></tr></thead><tbody>' + sezioniHtml +
+      '<table class="ptab"><colgroup><col style="width:5%"><col style="width:15%"><col style="width:40%"><col style="width:8%"><col style="width:16%"><col style="width:16%"></colgroup><thead><tr><th>Pos.</th><th>CODICE</th><th>DESCRIZIONE</th><th class="r">QTA</th><th class="r">PREZZO UNITARIO</th><th class="r">IMPORTO</th></tr></thead><tbody>' + sezioniHtml +
       '<tr class="ptot"><td colspan="5" style="text-align:right;">TOTALE OFFERTA (IVA ESCLUSA)</td><td class="r">' + fmtEur(totGlobale) + '</td></tr></tbody></table>' +
       (condizioni.length?'<div class="pcond"><div class="psec">CONDIZIONI DI FORNITURA</div><div class="pcond-grid">' + condHtml + '</div></div>':'') +
       '<p style="font-size:10px;margin-bottom:12px;">' + esc(tfine) + '</p>' +
       '<div class="pfirma"><div class="pfirma-nome">' + esc(fnome) + '</div><strong>TUEGA SRL</strong><br><div class="pfirma-ruolo">' + esc(fruolo) + '</div></div>' +
       '<div class="pfoot">Sede Operativa e Amministrativa: Via Alessandro Antonelli 4/a - 10093 Collegno TO Italy - Tel. 011202678<br>Sede legale: Via Fratel Prospero 14 - 10095 Grugliasco TO - Partita IVA 12395420016 - R.E.A.: TO 1286895</div>';
-  }
-
-  function updatePreview() {
-    var doc = document.getElementById("pdf-doc"); if (doc) doc.innerHTML = buildPDF();
   }
 
   // ---- SAVE ----
