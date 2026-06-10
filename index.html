@@ -1,74 +1,52 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tuega - Preventivi</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<style>
-    /* Stili base e layout */
-    body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-    .editor-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
-    
-    /* Area PDF (Anteprima) */
-    #pdf-doc { 
-        background: white; 
-        padding: 40px; 
-        width: 210mm; /* Larghezza A4 */
-        min-height: 297mm; /* Altezza A4 */
-        margin: auto;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    
-    /* Tabella PDF - Ottimizzata per non rompersi */
-    .ptab { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    .ptab th, .ptab td { border: 1px solid #ddd; padding: 8px; word-wrap: break-word; }
-    .ptab th { background: #f5f5f5; }
-
-    @media (max-width: 900px) { .editor-grid { grid-template-columns: 1fr; } }
-</style>
+    <meta charset="UTF-8">
+    <title>Anteprima Preventivo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #eee; }
+        /* Il contenitore deve essere visibile e avere dimensioni */
+        #pdf-doc { 
+            background: white; 
+            width: 210mm; 
+            min-height: 297mm; 
+            margin: 20px auto; 
+            padding: 20px;
+            border: 1px solid #ccc;
+            overflow: hidden;
+        }
+        .controls { text-align: center; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
 
-<div class="editor-grid">
-    <div class="input-area">
-        <h1>Editor Preventivo</h1>
-        <button onclick="generatePDF()">Scarica PDF</button>
-    </div>
+<div class="controls">
+    <button onclick="scaricaPDF()">Scarica PDF</button>
+</div>
 
-    <div class="preview-area">
-        <div id="pdf-doc">
-            <h2>Preventivo</h2>
-            <table class="ptab">
-                <thead>
-                    <tr>
-                        <th>Descrizione</th>
-                        <th>Prezzo</th>
-                    </tr>
-                </thead>
-                <tbody id="pdf-body">
-                    </tbody>
-            </table>
-        </div>
-    </div>
+<div id="pdf-doc">
+    <h1>Anteprima Preventivo</h1>
+    <p>Se vedi questo testo, il contenitore funziona.</p>
 </div>
 
 <script>
-    function generatePDF() {
-        const element = document.getElementById('pdf-doc');
-        
-        // Configurazione pulita senza windowWidth
-        const opt = {
-            margin:       10,
-            filename:     'preventivo.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save();
+    // Questa funzione carica il contenuto dentro il div
+    function caricaAnteprima() {
+        var doc = document.getElementById("pdf-doc");
+        // Qui richiamiamo la tua funzione buildPDF che hai nel file
+        if (typeof buildPDF === 'function') {
+            doc.innerHTML = buildPDF();
+        }
     }
-</script>
 
+    function scaricaPDF() {
+        var element = document.getElementById('pdf-doc');
+        html2pdf().from(element).save('preventivo.pdf');
+    }
+
+    // Carica l'anteprima appena la pagina è pronta
+    window.onload = caricaAnteprima;
+</script>
 </body>
 </html>
