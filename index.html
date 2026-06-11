@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tuega - Preventivi</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -866,76 +866,294 @@ textarea.inp{resize:vertical;min-height:60px;}
 
   // ---- PDF DOWNLOAD ----
   function downloadPDF() {
-    var numero = document.getElementById("e-numero").value||"preventivo";
-    var cnome = (document.getElementById("e-cnome").value||"cliente").split(" ").join("_");
+    var numero = document.getElementById("e-numero").value || "preventivo";
+    var cnome = (document.getElementById("e-cnome").value || "cliente").split(" ").join("_");
+    var logoSrc = document.querySelector(".topbar img").src;
 
-    // Div nascosto a larghezza A4 esatta, posizionato fuori schermo
-    var wrapper = document.createElement("div");
-    wrapper.style.cssText = "position:absolute;left:0;top:0;width:794px;z-index:-9999;background:#fff;";
-    var inner = document.createElement("div");
-    inner.id = "pdf-render";
-    inner.style.cssText = "width:794px;background:#fff;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#222;padding:20px 24px;box-sizing:border-box;";
-    inner.innerHTML = buildPDF();
-    wrapper.appendChild(inner);
-    document.body.appendChild(wrapper);
+    var doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    var pw = 210; // A4 width mm
+    var ph = 297; // A4 height mm
+    var ml = 14, mr = 14, mt = 14; // margins
+    var cw = pw - ml - mr; // content width = 182mm
+    var y = mt;
+    var pageH = ph - 14; // bottom margin
 
-    // Applica stili PDF inline al wrapper
-    var styleEl = document.createElement("style");
-    styleEl.textContent = [
-      ".ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #ddd;}",
-      ".ph-logo{height:36px;}",
-      ".ph-az{font-size:9px;color:#555;line-height:1.6;text-align:right;}",
-      ".pm{display:flex;justify-content:space-between;margin-bottom:12px;}",
-      ".pm-l{font-size:9px;color:#444;line-height:1.8;}",
-      ".pm-r{font-size:10px;line-height:1.8;}",
-      ".pm-cn{font-weight:700;font-size:11px;}",
-      ".pnum{font-size:10px;color:#444;margin-bottom:8px;}",
-      ".pogg{background:#f0f0f0;border-left:3px solid #888;padding:6px 10px;margin-bottom:10px;font-size:10px;}",
-      ".pogg strong{font-size:11px;}",
-      ".piva{font-style:italic;font-weight:600;font-size:9.5px;margin-bottom:10px;}",
-      ".psec{background:#e8e8e8;padding:5px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border:1px solid #ccc;}",
-      "#pdf-render .ptab{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed;}",
-      "#pdf-render .ptab th{background:#f5f5f5;border:1px solid #ccc;padding:4px 5px;font-size:9px;font-weight:700;text-align:left;}",
-      "#pdf-render .ptab th.r,#pdf-render .ptab td.r{text-align:right;}",
-      "#pdf-render .ptab td{border:1px solid #ddd;padding:4px 5px;vertical-align:top;font-size:9px;word-wrap:break-word;word-break:break-word;white-space:normal;overflow-wrap:break-word;}",
-      "#pdf-render .ptab td.cod{font-weight:700;}",
-      ".pimg{max-width:80px;max-height:70px;object-fit:contain;display:block;margin:3px 0;}",
-      "#pdf-render .ptot td{font-weight:700;background:#f5f5f5;}",
-      ".pcond{margin-top:10px;}",
-      ".pcond-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;margin:6px 0 10px 2px;}",
-      ".pcond-row{display:flex;gap:6px;font-size:9px;}",
-      ".pcond-lbl{font-weight:600;min-width:80px;}",
-      ".pfirma{margin-top:12px;font-size:10px;line-height:1.8;}",
-      ".pfirma-nome{font-weight:700;}",
-      ".pfirma-ruolo{color:#888;font-size:9px;}",
-      ".pfoot{margin-top:14px;padding-top:6px;border-top:1px solid #ddd;font-size:8px;color:#888;text-align:center;line-height:1.6;}"
-    ].join("");
-    wrapper.appendChild(styleEl);
+    function checkPage(needed) {
+      if (y + needed > pageH) { doc.addPage(); y = mt; }
+    }
 
-    setTimeout(function() {
-      html2pdf().set({
-        margin: [10, 10, 10, 10],
-        filename: numero + "_" + cnome + ".pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          scrollX: 0,
-          scrollY: 0,
-          x: 0,
-          y: 0,
-          width: 794,
-          windowWidth: 794
-        },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["avoid-all"] }
-      }).from(inner).save().then(function() {
-        document.body.removeChild(wrapper);
-      }).catch(function() {
-        document.body.removeChild(wrapper);
+    function setFont(style, size, color) {
+      doc.setFontSize(size || 9);
+      doc.setFont("helvetica", style || "normal");
+      if (color) doc.setTextColor(color[0], color[1], color[2]);
+      else doc.setTextColor(34, 34, 34);
+    }
+
+    function text(txt, x, yy, opts) {
+      doc.text(txt || "", x, yy, opts || {});
+    }
+
+    function hline(yy, x1, x2, color) {
+      doc.setDrawColor(color || 200, color || 200, color || 200);
+      doc.setLineWidth(0.2);
+      doc.line(x1 !== undefined ? x1 : ml, yy, x2 !== undefined ? x2 : pw - mr, yy);
+    }
+
+    function fillRect(x, yy, w, h, r, g, b) {
+      doc.setFillColor(r || 240, g || 240, b || 240);
+      doc.rect(x, yy, w, h, "F");
+    }
+
+    // ---- HEADER: logo + azienda ----
+    try {
+      doc.addImage(logoSrc, "PNG", ml, y, 45, 12);
+    } catch(e) {}
+
+    setFont("normal", 8, [85, 85, 85]);
+    var azLines = [
+      "Sede Operativa e Amministrativa:",
+      "Via Alessandro Antonelli 4/a - 10093 Collegno TO Italy",
+      "Tel. 011202678",
+      "Sede legale: Via Fratel Prospero 14 - 10095 Grugliasco TO",
+      "Partita IVA 12395420016 - R.E.A.: TO 1286895",
+      "www.tuega.com  www.tuega.it  info@tuega.com"
+    ];
+    var azY = y + 2;
+    azLines.forEach(function(l) {
+      text(l, pw - mr, azY, { align: "right" });
+      azY += 3.5;
+    });
+    y = Math.max(y + 14, azY) + 2;
+    hline(y);
+    y += 6;
+
+    // ---- DATA + DESTINATARIO ----
+    var dataVal = document.getElementById("e-data").value;
+    var dataFmt = dataVal ? (dayIta(dataVal) + " " + fmtDate(dataVal)) : "";
+    setFont("normal", 8.5, [80, 80, 80]);
+    text("Collegno, " + dataFmt, ml, y);
+
+    var cnome2 = document.getElementById("e-cnome").value;
+    var cref = document.getElementById("e-cref").value;
+    var cind = document.getElementById("e-cind").value;
+    var ccitta = document.getElementById("e-ccitta").value;
+    var ctel = document.getElementById("e-ctel").value;
+    var cemail = document.getElementById("e-cemail").value;
+
+    var destX = pw / 2;
+    setFont("normal", 8.5, [34, 34, 34]);
+    text("Spett.le", destX, y);
+    y += 4;
+    setFont("bold", 9.5, [34, 34, 34]);
+    text(cnome2, destX, y);
+    y += 4;
+    setFont("normal", 8.5, [34, 34, 34]);
+    if (cind) { text(cind, destX, y); y += 3.8; }
+    if (ccitta) { text(ccitta, destX, y); y += 3.8; }
+    if (cref) {
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
+      text("C.A. ", destX, y);
+      doc.setFont("helvetica", "bold");
+      text(cref, destX + doc.getTextWidth("C.A. "), y);
+      doc.setFont("helvetica", "normal");
+      y += 3.8;
+    }
+    if (ctel) { text("Tel. " + ctel, destX, y); y += 3.8; }
+    if (cemail) { text(cemail, destX, y); y += 3.8; }
+    y += 4;
+
+    // ---- NUMERO ----
+    var numero2 = document.getElementById("e-numero").value;
+    if (numero2) {
+      setFont("normal", 9, [80, 80, 80]);
+      text(numero2, ml, y);
+      y += 5;
+    }
+
+    // ---- OGGETTO ----
+    var oggetto = document.getElementById("e-oggetto").value;
+    fillRect(ml, y - 3.5, cw, 8, 240, 240, 240);
+    setFont("bold", 9.5, [34, 34, 34]);
+    text("Ogg.: " + oggetto, ml + 2, y + 1);
+    y += 8;
+
+    setFont("normal", 8.5, [34, 34, 34]);
+    text("Di seguito, le quotazioni economiche come richiesto:", ml, y); y += 4;
+    setFont("bold italic", 8.5, [34, 34, 34]);
+    text("Tutti i prezzi, anche se non espressamente indicato sono I.V.A. esclusa.", ml, y); y += 6;
+
+    // ---- TABELLA ----
+    // Colonne: Pos(8) | Codice+Img(28) | Descrizione(78) | Qta(12) | Prezzo(28) | Importo(28)
+    var cols = [8, 28, 78, 12, 28, 28];
+    var colX = [ml];
+    for (var ci = 0; ci < cols.length - 1; ci++) colX.push(colX[ci] + cols[ci]);
+
+    // Header tabella
+    fillRect(ml, y, cw, 6, 245, 245, 245);
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.2);
+    doc.rect(ml, y, cw, 6);
+    setFont("bold", 7.5, [80, 80, 80]);
+    var hdr = ["Pos.", "Codice", "Descrizione", "Qta", "Prezzo unit.", "Importo"];
+    hdr.forEach(function(h, i) {
+      var align = i >= 3 ? "right" : "left";
+      var hx = align === "right" ? colX[i] + cols[i] - 1 : colX[i] + 1;
+      text(h, hx, y + 4, { align: align });
+    });
+    y += 6;
+
+    var totGlobale = 0;
+
+    sezioni.forEach(function(s) {
+      // Titolo sezione
+      if (s.titolo) {
+        checkPage(7);
+        fillRect(ml, y, cw, 6, 232, 232, 232);
+        doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.2);
+        doc.rect(ml, y, cw, 6);
+        setFont("bold", 8, [34, 34, 34]);
+        text(s.titolo.toUpperCase(), ml + 2, y + 4);
+        y += 6;
+      }
+
+      (s.voci || []).forEach(function(v, vi) {
+        // Riga prodotto principale
+        var descHtml = v.descrizione || "";
+        // Strip HTML tags per jsPDF
+        var descTxt = descHtml.replace(/<br\s*\/?>/gi, "
+").replace(/<[^>]+>/g, "").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&nbsp;/g," ").trim();
+        var descLines = doc.splitTextToSize(descTxt, cols[2] - 2);
+        var rowH = Math.max(descLines.length * 3.8 + 4, 10);
+        if (v.img) rowH = Math.max(rowH, 22);
+
+        checkPage(rowH);
+        doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.15);
+        // bordi colonne
+        cols.forEach(function(w, i) { doc.rect(colX[i], y, w, rowH); });
+
+        setFont("bold", 8, [34, 34, 34]);
+        text(String(vi + 1), colX[0] + cols[0]/2, y + 4, { align: "center" });
+
+        setFont("bold", 7.5, [34, 34, 34]);
+        var codLines = doc.splitTextToSize(v.codice || "", cols[1] - 2);
+        doc.text(codLines, colX[1] + 1, y + 3.5);
+
+        if (v.img) {
+          try { doc.addImage(v.img, colX[1] + 1, y + codLines.length * 3.5 + 2, 20, 16); } catch(e) {}
+        }
+
+        setFont("normal", 7.5, [34, 34, 34]);
+        doc.text(descLines, colX[2] + 1, y + 3.5);
+
+        y += rowH;
+
+        // Sub-righe prezzo
+        (v.sub || []).forEach(function(sb) {
+          if (!sb.desc && !sb.qta && !sb.prezzo) return;
+          var imp = (sb.qta || 0) * (sb.prezzo || 0);
+          totGlobale += imp;
+          var subH = 6;
+          checkPage(subH);
+          doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.15);
+          cols.forEach(function(w, i) { doc.rect(colX[i], y, w, subH); });
+          setFont("normal", 7.5, [34, 34, 34]);
+          var sdLines = doc.splitTextToSize(sb.desc || "", cols[2] - 2);
+          doc.text(sdLines, colX[2] + 1, y + 4);
+          text(String(sb.qta || ""), colX[3] + cols[3] - 1, y + 4, { align: "right" });
+          if (sb.prezzo) text(fmtEur(sb.prezzo), colX[4] + cols[4] - 1, y + 4, { align: "right" });
+          if (imp) text(fmtEur(imp), colX[5] + cols[5] - 1, y + 4, { align: "right" });
+          y += subH;
+        });
+
+        // Accessori
+        if ((v.acc || []).length) {
+          var accH = 5;
+          checkPage(accH);
+          fillRect(ml, y, cw, accH, 250, 250, 250);
+          cols.forEach(function(w, i) { doc.rect(colX[i], y, w, accH); });
+          setFont("bold", 7, [150, 150, 150]);
+          text("ACCESSORI", colX[2] + 1, y + 3.5);
+          y += accH;
+
+          (v.acc || []).forEach(function(ac) {
+            var imp2 = (ac.qta || 0) * (ac.prezzo || 0);
+            totGlobale += imp2;
+            var acH = 6;
+            checkPage(acH);
+            fillRect(ml, y, cw, acH, 252, 252, 252);
+            cols.forEach(function(w, i) { doc.rect(colX[i], y, w, acH); });
+            setFont("italic", 7.5, [80, 80, 80]);
+            text(ac.desc || "", colX[2] + 1, y + 4);
+            setFont("normal", 7.5, [80, 80, 80]);
+            text(String(ac.qta || ""), colX[3] + cols[3] - 1, y + 4, { align: "right" });
+            if (ac.prezzo) text(fmtEur(ac.prezzo), colX[4] + cols[4] - 1, y + 4, { align: "right" });
+            if (imp2) text(fmtEur(imp2), colX[5] + cols[5] - 1, y + 4, { align: "right" });
+            y += acH;
+          });
+        }
       });
-    }, 200);
+    });
+
+    // Riga totale
+    checkPage(7);
+    fillRect(ml, y, cw, 7, 245, 245, 245);
+    cols.forEach(function(w, i) { doc.setDrawColor(180,180,180); doc.setLineWidth(0.2); doc.rect(colX[i], y, w, 7); });
+    setFont("bold", 8.5, [34, 34, 34]);
+    text("TOTALE OFFERTA (IVA ESCLUSA)", colX[4] + cols[4] - 1, y + 4.5, { align: "right" });
+    text(fmtEur(totGlobale), colX[5] + cols[5] - 1, y + 4.5, { align: "right" });
+    y += 10;
+
+    // ---- CONDIZIONI ----
+    if (condizioni.length) {
+      checkPage(10);
+      fillRect(ml, y, cw, 6, 232, 232, 232);
+      doc.setDrawColor(180,180,180); doc.setLineWidth(0.2); doc.rect(ml, y, cw, 6);
+      setFont("bold", 8, [34, 34, 34]);
+      text("CONDIZIONI DI FORNITURA", ml + 2, y + 4);
+      y += 8;
+      var half = cw / 2 - 4;
+      condizioni.forEach(function(c, ci) {
+        var cx = ci % 2 === 0 ? ml : ml + half + 8;
+        if (ci % 2 === 0 && ci > 0) y += 5;
+        checkPage(5);
+        setFont("bold", 8, [34, 34, 34]);
+        text((c.label || "") + ":", cx, y);
+        setFont("normal", 8, [34, 34, 34]);
+        text(c.valore || "", cx + doc.getTextWidth((c.label||"") + ": "), y);
+        if (ci % 2 === 1) y += 5;
+      });
+      if (condizioni.length % 2 !== 0) y += 5;
+      y += 4;
+    }
+
+    // ---- TESTO FINALE ----
+    var tfine = document.getElementById("e-tfine").value;
+    if (tfine) {
+      checkPage(10);
+      setFont("normal", 8.5, [34, 34, 34]);
+      var tLines = doc.splitTextToSize(tfine, cw);
+      tLines.forEach(function(l) { checkPage(4); text(l, ml, y); y += 4; });
+      y += 4;
+    }
+
+    // ---- FIRMA ----
+    checkPage(16);
+    var fnome = document.getElementById("e-fnome").value;
+    var fruolo = document.getElementById("e-fruolo").value;
+    setFont("bold", 9, [34, 34, 34]);
+    text(fnome, ml, y); y += 4;
+    setFont("bold", 9, [34, 34, 34]);
+    text("TUEGA SRL", ml, y); y += 4;
+    setFont("normal", 8, [150, 150, 150]);
+    text(fruolo, ml, y); y += 8;
+
+    // ---- FOOTER ----
+    hline(y);
+    y += 3;
+    setFont("normal", 7, [150, 150, 150]);
+    text("Sede Operativa e Amministrativa: Via Alessandro Antonelli 4/a - 10093 Collegno TO Italy - Tel. 011202678", pw / 2, y, { align: "center" }); y += 3.5;
+    text("Sede legale: Via Fratel Prospero 14 - 10095 Grugliasco TO - Partita IVA 12395420016 - R.E.A.: TO 1286895", pw / 2, y, { align: "center" });
+
+    doc.save(numero + "_" + cnome + ".pdf");
   }
 
   // ---- BIND EVENTS ----
